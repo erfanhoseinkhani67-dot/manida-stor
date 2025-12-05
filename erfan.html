@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مانیدا - مدیریت محصولات</title>
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #2c3e50; /* رنگ پس‌زمینه ساده */
+        color: white;
+        min-height: 100vh;
+        text-align: center;
+    }
+
+    h1 {
+        margin: 30px 0 20px 0;
+        font-size: 40px;
+        font-weight: bold;
+    }
+
+    #controls {
+        margin: 20px 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    input[type="text"], input[type="number"] {
+        padding: 12px;
+        width: 80%;
+        max-width: 300px;
+        border: none;
+        border-radius: 10px;
+        outline: none;
+        font-size: 16px;
+    }
+
+    button {
+        padding: 12px 20px;
+        font-size: 16px;
+        border: none;
+        border-radius: 10px;
+        color: white;
+        cursor: pointer;
+        width: 80%;
+        max-width: 300px;
+        transition: all 0.2s ease;
+    }
+
+    button.add { background-color: #27ae60; }
+    button.add:hover { background-color: #2ecc71; }
+
+    button.edit { background-color: #2980b9; }
+    button.edit:hover { background-color: #3498db; }
+
+    button.delete { background-color: #c0392b; }
+    button.delete:hover { background-color: #e74c3c; }
+
+    table {
+        width: 95%;
+        max-width: 600px;
+        margin: 20px auto;
+        border-collapse: collapse;
+        background-color: #34495e;
+        border-radius: 10px;
+        overflow: hidden;
+        font-size: 16px;
+    }
+
+    th, td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: center;
+    }
+
+    th {
+        background-color: #1abc9c;
+    }
+
+    tr:nth-child(even) {
+        background-color: #3b5998;
+    }
+
+    tr:hover {
+        background-color: #4b77be;
+    }
+
+    #searchInput {
+        width: 80%;
+        max-width: 300px;
+        padding: 12px;
+        border-radius: 10px;
+        border: none;
+        outline: none;
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+
+    @media (max-width: 400px) {
+        h1 { font-size: 30px; }
+        input[type="text"], input[type="number"], button, #searchInput { font-size: 14px; padding: 10px; }
+    }
+
+    .action-btn {
+        padding: 6px 10px;
+        border-radius: 6px;
+        margin: 2px;
+        font-size: 14px;
+        border: none;
+        cursor: pointer;
+        color: white;
+    }
+</style>
+</head>
+<body>
+
+<h1>مانیدا</h1>
+
+<div id="controls">
+    <input type="text" id="searchInput" placeholder="جستجو محصول..." onkeyup="searchProduct()">
+    <input type="text" id="productName" placeholder="نام محصول">
+    <input type="number" id="productPrice" placeholder="قیمت محصول">
+    <button class="add" onclick="addProduct()">اضافه کردن محصول</button>
+</div>
+
+<table id="productTable">
+    <thead>
+        <tr>
+            <th>ردیف</th>
+            <th>نام محصول</th>
+            <th>قیمت</th>
+            <th>عملیات</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- محصولات اضافه می‌شوند -->
+    </tbody>
+</table>
+
+<script>
+let products = [];
+
+function refreshTable(filteredProducts = null) {
+    const tbody = document.getElementById('productTable').getElementsByTagName('tbody')[0];
+    tbody.innerHTML = '';
+    let list = filteredProducts || products;
+    list.forEach((product, index) => {
+        let row = tbody.insertRow();
+        row.insertCell(0).innerText = index + 1;
+        row.insertCell(1).innerText = product.name;
+        row.insertCell(2).innerText = product.price;
+
+        let actionsCell = row.insertCell(3);
+
+        let editBtn = document.createElement('button');
+        editBtn.className = 'edit action-btn';
+        editBtn.innerText = 'ویرایش';
+        editBtn.onclick = () => editProduct(index);
+        actionsCell.appendChild(editBtn);
+let deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete action-btn';
+        deleteBtn.innerText = 'حذف';
+        deleteBtn.onclick = () => deleteProduct(index);
+        actionsCell.appendChild(deleteBtn);
+    });
+}
+
+function addProduct() {
+    let name = document.getElementById('productName').value.trim();
+    let price = document.getElementById('productPrice').value.trim();
+    if(name && price) {
+        products.push({name: name, price: price});
+        document.getElementById('productName').value = '';
+        document.getElementById('productPrice').value = '';
+        refreshTable();
+    } else {
+        alert("لطفاً نام و قیمت محصول را وارد کنید!");
+    }
+}
+
+function editProduct(index) {
+    let newName = prompt("نام جدید محصول:", products[index].name);
+    if(newName !== null && newName.trim() !== "") {
+        let newPrice = prompt("قیمت جدید محصول:", products[index].price);
+        if(newPrice !== null && newPrice.trim() !== "") {
+            products[index].name = newName;
+            products[index].price = newPrice;
+            refreshTable();
+        }
+    }
+}
+
+function deleteProduct(index) {
+    if(confirm(آیا مطمئن هستید که می‌خواهید محصول "${products[index].name}" را حذف کنید؟)) {
+        products.splice(index, 1);
+        refreshTable();
+    }
+}
+
+function searchProduct() {
+    let query = document.getElementById('searchInput').value.toLowerCase();
+    let filtered = products.filter(p => p.name.toLowerCase().includes(query));
+    refreshTable(filtered);
+}
+</script>
+
+</body>
+</html>
